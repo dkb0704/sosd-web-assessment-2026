@@ -3,15 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Self-intrudtion</title>
+    <title>第一个组件：个人卡片</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing:border-box;
+            font-family:"微软雅黑",sans-serif;
+        }
+        body {
+        background-color:rgb(251, 232, 196);
+        padding: 40px;
+    }
+    .card{
+        width: 300px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 13px;
+        padding: 25px;
+        box-shadow:0 4px 12px rgb(247, 205, 129);
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .card h2{
+        color:black;
+        margin-bottom: 15px 0;
+    }
+    .card p{
+        color:#4a3b29;
+        margin: 8px 0;
+    }
+    .card img{
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        margin: 15px 0;
+    }
+    .card ul {
+            list-style: none;
+            margin: 10px 0;
+        }
+        .card li {
+            margin: 5px 0;
+            color:#4a3b29;
+        }
+        /* 链接样式 */
+        .card a {
+            color: rgb(247, 154, 31);
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
-    <h1>
+    <header>
+        <h1 style="text-align: center; margin-bottom: 30px;">
         欢迎来到LSY的个人空间~
     </h1>
-    <h2>
+</header>
+<main>
+    <div class="card">
+        <h2>
+            linshiyan~
+        </h2>
+    <img src="xyy2.png" alt="学习">
+    <p>
         是努力学习前端的新手小白一枚orz
-    </h2>
+    </p>
     <p>
         专业：计算机科学与技术
     </p>
@@ -22,6 +79,7 @@
         <li>sleeping(但是经常失眠)</li>
     </ul>
     <p><a href="https://www.deepseek.com/">点击即达我想复刻的网页（）</a></p>
-<img src="xyy2.png" alt="学习" width="200">
+    </div>
+</main>
 </body>
 </html>
