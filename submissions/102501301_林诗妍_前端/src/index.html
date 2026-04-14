@@ -26,7 +26,7 @@
         margin-bottom: 20px;
     }
     .card h2{
-        color:rgb(50, 39, 28);
+        color:rgb(26, 44, 53);
         font-family:"华文新魏",serif;
         margin-bottom: 15px 0;
         font-size: 30px;
@@ -63,6 +63,25 @@
             font-family:"华文行楷",serif;
             text-align: center;
             color: rgb(28, 142, 249);
+        }
+        .card img:hover {
+    transform: scale(1.2); /* 放大 1.15 倍 */
+    box-shadow: 0 0 15px rgb(119, 212, 255); /* 光晕更强 */
+    cursor: pointer; /* 鼠标变成小手 */
+        }
+        .card:hover {
+    transform: translateY(-2px); /* 向上浮 8px */
+    box-shadow: 0 10px 20px rgb(247, 205, 129); /* 阴影变大 */
+    background: #ffffff; /* 轻微变暖色 */
+    transform: scale(1.05);
+    cursor: pointer;
+    }
+        .card h2:hover{
+            transform: scale(1.2);
+            color:rgb(26, 44, 53);
+        }
+        .card a:hover{
+            transform: scale(1.2);
         }
     </style>
 </head>
