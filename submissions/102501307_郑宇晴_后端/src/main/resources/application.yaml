@@ -1,0 +1,9 @@
+spring.application.name: TokenPocket
+spring:
+  data:
+    redis:
+      host: 192.168.154.128
+      port: 6379
+      password: hsp
+      database: 0
+      timeout: 5000ms
