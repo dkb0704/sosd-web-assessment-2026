@@ -58,4 +58,20 @@ public class AuthController {
 
         return authHeader;
     }
+
+    //用户退出登录
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout(
+            @RequestHeader("Authorization") String authHeader) {
+
+        String accessToken = extractToken(authHeader);
+
+        if (accessToken == null || accessToken.trim().isEmpty()) {
+            return ApiResponse.error(401, "未提供 Access Token");
+        }
+
+        authService.logout(accessToken);
+
+        return ApiResponse.success("退出登录成功", null);
+    }
 }

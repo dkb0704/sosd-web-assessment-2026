@@ -20,4 +20,7 @@ public interface UserMapper {
     int updateStatus(@Param("id") Long id, @Param("status") Integer status);
     int updateComputePoints(@Param("id") Long id,
                             @Param("computePoints") Integer computePoints);
+    //原子增加用户算力点数
+    int increaseComputePoints(@Param("id") Long id,
+                              @Param("points") Integer points);
 }
