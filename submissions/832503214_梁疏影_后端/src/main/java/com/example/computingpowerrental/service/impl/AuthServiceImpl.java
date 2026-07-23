@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.computingpowerrental.util.RedisUtil;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Lark
@@ -23,11 +26,14 @@ public class AuthServiceImpl implements AuthService {
     private static final int USER_ROLE_NORMAL = 0;
     private static final int USER_STATUS_NORMAL = 1;
     private static final int DEFAULT_COMPUTE_POINTS = 0;
+    private static final String TOKEN_BLACKLIST_PREFIX = "auth:blacklist:";   //Redis 中 JWT 黑名单的 Key 前缀
 
     @Autowired
     private UserMapper userMapper;
     @Autowired
     private JwtUtil jwtUtil;
+    @Autowired
+    private RedisUtil redisUtil;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -108,6 +114,55 @@ public class AuthServiceImpl implements AuthService {
         }
 
         return buildLoginResponse(user);
+    }
+
+    /**
+     * 用户退出登录
+     *
+     * 实现思路：
+     * JWT 本身是无状态的，后端无法直接“删除”已经签发的 Token。
+     * 因此退出登录时，将当前 Access Token 写入 Redis 黑名单。
+     *
+     * 后续每次请求经过 AuthInterceptor 时，
+     * 都会先检查该 Token 是否存在于 Redis 黑名单中。
+     *
+     * @param accessToken 当前请求携带的 Access Token
+     */
+    @Override
+    public void logout(String accessToken) {
+
+        //检查 Token 是否为空
+        if (accessToken == null || accessToken.trim().isEmpty()) {
+            throw new RuntimeException("Access Token 不能为空");
+        }
+
+        //检查 Token 是否有效
+        if (!jwtUtil.validateToken(accessToken)) {
+            throw new RuntimeException("Token 无效或已过期");
+        }
+
+        //退出接口只接收 Access Token
+        if (!jwtUtil.isAccessToken(accessToken)) {
+            throw new RuntimeException("请使用 Access Token 退出登录");
+        }
+
+        //获取 Token 剩余有效时间
+        long remainingTime = jwtUtil.getRemainingTime(accessToken);
+
+        if (remainingTime <= 0) {
+            throw new RuntimeException("Token 已过期");
+        }
+
+        //构建 Redis 黑名单 Key
+        String blacklistKey = TOKEN_BLACKLIST_PREFIX + accessToken;
+
+        //将 Token 加入 Redis 黑名单
+        redisUtil.set(
+                blacklistKey,
+                "1",
+                remainingTime,
+                TimeUnit.SECONDS
+        );
     }
 
     private LoginResponse buildLoginResponse(User user) {

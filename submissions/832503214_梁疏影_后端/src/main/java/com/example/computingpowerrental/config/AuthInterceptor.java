@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
+import com.example.computingpowerrental.util.RedisUtil;
 
 import java.io.IOException;
 
@@ -20,9 +21,12 @@ import java.io.IOException;
 public class AuthInterceptor implements HandlerInterceptor {
 
     private static final Integer ROLE_ADMIN = 1;
+    private static final String TOKEN_BLACKLIST_PREFIX = "auth:blacklist:";   //Redis 中 JWT 黑名单的 Key 前缀
 
     @Autowired
     private JwtUtil jwtUtil;
+    @Autowired
+    private RedisUtil redisUtil;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -43,6 +47,12 @@ public class AuthInterceptor implements HandlerInterceptor {
             //先简单校验有效性
             if (!jwtUtil.validateToken(token)) {
                 sendErrorResponse(response, 401, "Token 无效或已过期");
+                return false;
+            }
+            //检查token是否已经被加入Redis黑名单
+            String blacklistKey = TOKEN_BLACKLIST_PREFIX + token;
+            if (redisUtil.hasKey(blacklistKey)) {
+                sendErrorResponse(response, 401, "登录状态已失效，请重新登录");
                 return false;
             }
             if (!jwtUtil.isAccessToken(token)) {
