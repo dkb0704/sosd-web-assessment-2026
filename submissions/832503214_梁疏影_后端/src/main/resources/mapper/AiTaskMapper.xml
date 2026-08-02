@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.computingpowerrental.mapper.AiTaskMapper">
+
+    <!--
+        AiTask 实体与 ai_task 表字段映射
+    -->
+    <resultMap id="AiTaskResultMap"
+               type="com.example.computingpowerrental.entity.AiTask">
+
+        <id property="id" column="id"/>
+
+        <result property="userId" column="user_id"/>
+        <result property="prompt" column="prompt"/>
+        <result property="modelName" column="model_name"/>
+        <result property="category" column="category"/>
+        <result property="costPoints" column="cost_points"/>
+        <result property="status" column="status"/>
+        <result property="result" column="result"/>
+        <result property="errorMessage" column="error_message"/>
+        <result property="isPublic" column="is_public"/>
+        <result property="likeCount" column="like_count"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="finishedAt" column="finished_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!--
+        统一字段列表
+
+        作用：
+        避免每个查询都重复写一遍字段。
+    -->
+    <sql id="AiTaskColumns">
+        id,
+        user_id,
+        prompt,
+        model_name,
+        category,
+        cost_points,
+        status,
+        result,
+        error_message,
+        is_public,
+        like_count,
+        created_at,
+        finished_at,
+        updated_at
+    </sql>
+
+    <!--
+        创建 AI 任务
+
+        初始状态通常由 Service 设置为 WAITING。
+        created_at、updated_at 使用数据库当前时间。
+    -->
+    <insert id="insert"
+            parameterType="com.example.computingpowerrental.entity.AiTask"
+            useGeneratedKeys="true"
+            keyProperty="id">
+
+        INSERT INTO ai_task (
+        user_id,
+        prompt,
+        model_name,
+        category,
+        cost_points,
+        status,
+        result,
+        error_message,
+        is_public,
+        like_count,
+        created_at,
+        updated_at
+        )
+        VALUES (
+        #{userId},
+        #{prompt},
+        #{modelName},
+        #{category},
+        #{costPoints},
+        #{status},
+        #{result},
+        #{errorMessage},
+        #{isPublic},
+        #{likeCount},
+        NOW(),
+        NOW()
+        )
+    </insert>
+
+    <!--
+        根据任务 ID 查询任务
+    -->
+    <select id="findById"
+            resultMap="AiTaskResultMap">
+
+        SELECT
+        <include refid="AiTaskColumns"/>
+        FROM ai_task
+        WHERE id = #{id}
+    </select>
+
+    <!--
+        根据任务 ID 和用户 ID 查询任务
+
+        用于用户端，避免用户查看其他人的私密任务。
+    -->
+    <select id="findByIdAndUserId"
+            resultMap="AiTaskResultMap">
+
+        SELECT
+        <include refid="AiTaskColumns"/>
+        FROM ai_task
+        WHERE id = #{id}
+        AND user_id = #{userId}
+    </select>
+
+    <!--
+        查询指定用户的全部任务
+
+        当前先按创建时间倒序。
+        后续分页时再增加 LIMIT、OFFSET。
+    -->
+    <select id="findByUserId"
+            resultMap="AiTaskResultMap">
+
+        SELECT
+        <include refid="AiTaskColumns"/>
+        FROM ai_task
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
+    <!--
+        更新任务状态
+
+        例如：
+        WAITING -> PROCESSING
+    -->
+    <update id="updateStatus">
+        UPDATE ai_task
+        SET status = #{status},
+        updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!--
+        任务生成成功
+
+        同时更新：
+        1. status
+        2. result
+        3. finished_at
+        4. updated_at
+
+        并清空旧的失败原因，避免脏数据残留。
+    -->
+    <update id="updateSuccess">
+        UPDATE ai_task
+        SET status = #{status},
+        result = #{result},
+        error_message = NULL,
+        finished_at = NOW(),
+        updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!--
+        任务生成失败
+
+        同时更新：
+        1. status
+        2. error_message
+        3. finished_at
+        4. updated_at
+    -->
+    <update id="updateFailed">
+        UPDATE ai_task
+        SET status = #{status},
+        error_message = #{errorMessage},
+        finished_at = NOW(),
+        updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!--
+        更新任务公开状态
+
+        必须同时校验 user_id，
+        确保用户只能修改自己的任务。
+    -->
+    <update id="updatePublicStatus">
+        UPDATE ai_task
+        SET is_public = #{isPublic},
+        updated_at = NOW()
+        WHERE id = #{id}
+        AND user_id = #{userId}
+    </update>
+
+</mapper>
