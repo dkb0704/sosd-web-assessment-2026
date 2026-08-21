@@ -25,6 +25,17 @@ spring:
             enable: false
             required: false
 
+  rabbitmq:
+    host: 192.168.150.101
+    port: 5673
+    virtual-host: /
+    password: guest
+    username: guest
+
+    listener:
+      simple:
+        prefetch: 1
+
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
@@ -35,3 +46,8 @@ jwt:
   secret: "mySecretKey12345678901234567890123456789012"  # 至少32位
   expiration: 86400000  # 24小时（毫秒）
 
+alipay:
+  app-id: 9021000167602944
+  private-key: MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCQl2u/XR8uD7UsddBSZ+kBFq+Do9wnQvmlitk/pWrgB0HakDRoSg20smatMfEleY5VfO/CSuxPBwHWpIgEUqOIN94aQdLvY5+d50lt35DJ+WgLtqVY40SjfWe1RitNuLIq9Xa5F8bHLy8pak2DZzPCux/PLl2Eh+WARiA85Bay4RFZFyS1upjIPsmeqEMP83c+ffDD+VKfpPYgtkswZi/3JtTWkAS2BPpaqcc2YW/pwnHOwQ0CqGz1GmRFNTH89ReKVAW5DmsCl/Ofxl2dKWatkpYn4Tm8eANdx4xBUIg7yakQRDjd0cS1BzStnHIP1QTS6/wXgpA/x8MqCsnY3QitAgMBAAECggEASoDLczJfg5NybjNSoXOLWxU+YN1I7i4ThtoxsRriJAd5Rk5xwp8NyuL2Bx4pvH6S+bfDruB+PQZGSzxCHcAbJXBsECmEr/csYuevLV86MuhBVW/KaS/JyVgv3PcIDycxHvOWNi9rLG1Cpttwj1nZEOjsrgudAlInzl3T9KwuigKl9RDDT+zxvj7VL3JI/ObzLcZZLUYSvUhewt9YVMxyPWh5eZl/t2ggr6dc4+mHoIF/GSii55RMJs14cUgYLaO3osACegZXCfu54b+23QKkHol1g/sZSxprU4e5iqn98nFrYMb4O/bflrJzAHYJfysUZbbyAxg5kr20eeVjXAO/oQKBgQDt5o0+ZdX+vaxRMMnX23Ja+qEk9HBE937vnKLEog3X1egtH4FYTtcIFVjSHEPyMyfpN8bHwdQdHG0gfUFv3DW4zKVhXCb9BrBuEvsUxg2PUEbS+IdUXpD7V8IWYSAnI4efrL1IuxwiU45DqkT+C7yLMlCrksTmFvgjCcOzPvjGpQKBgQCbl4sSY9BNcyllSQWhrh4tx3KzmaAlDID/Akw4xGQh3eP1OrkPS/znmyeTn96mFNdSAn/xwWCfHomvh9BEv8fjkfsb6ekU76PmopuBRGJEWpugg5u/0xcoyeOcccqnZZpwaXXXzSSTq2DlpmJVBg4AZwjcYOli6Bkkwdu/hg8jaQKBgQC+100E+jJhiQxbkTTJ+VtSCm4MtB3/5T6pvtB/xrQuKYV39ScQjSZIcL9wxYXoHAtvNfQ7OI0M0UnlXzWII3HhDiG46XDJV31ev9E1B+/GwJIgGYiOMNJDHlIvG7jsTL82Yx7w4lCeZMLiGwv/c7DLRRCbokBbh5+ElAeumdx9lQKBgCqf74eQNKajH/oRcSuD6dycwT2WnprHvCcgWAVNOClXAnZSKhSYuqYwiT0WFQbmur5K1QZD9dZhpVKjIFlVOMuNWH+jKymDJSGv9m4Jb+pN8EifBXIdwEB6XpKjUeNeIFsfaRs/pf+WeaswU8v7JqbRk0ncetOPxiOdwDfN4CPRAoGAGX5tB0z7TNIyGiiLKjIvvi92hLRoHSkVS1OwCJOQPl7VT83AMgE92hEk+JmI89bzLrGK4HGjkjtrvr083GZllIfxbytcVLkV7Fg/46ttHZzVXIBv6PCoO8P02ttdrRx8WUcUr5vFk4i2PvpyyxEXJHFZ7kQxtVjT9HLPi1G1+5Q=
+  public-key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsS1aDZOr31ce2qReFIvRzProWARx4MA1B3qi5Kk8oGWBb2n4wSSwuclOP01a7W7Q+RJwHSKSIO1UzPyfETpraGs1HlXU6Kc+FAfRXtwc5nRwbY62AK2MKwdYfMK2AiemYKYA8NDRnCXwe74aBXxn14VnR60gTs+1cKYLs01Bqg/rnkjh6cNau3tT8rNUZOiG/JfT2oQJ1G8LxW7zyhm22Pm3zIa0JXFDEHmDKgX6KZ/olk2AtRgXyS/FHuwNk99y+UDcKLhSctpgz5CWWx031z+se1s1DLGNe7NBbCaau6cj8tweW+wvpPzenryE7240dNivquVsB8YM67T9d/LycwIDAQAB
+  notify-url:  http://q8d774a5.natappfree.cc/alipay/notify

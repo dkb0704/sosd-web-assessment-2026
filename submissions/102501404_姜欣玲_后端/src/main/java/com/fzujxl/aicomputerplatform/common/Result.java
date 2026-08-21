@@ -12,8 +12,8 @@ public class Result<T> {
     private String message;
     private T data;
 
-    public static <T> Result<T> success() {
-        return new Result<>(ResultCode.SUCCESS, "操作成功", null);
+    public static <T> Result<T> success(String message) {
+        return new Result<>(ResultCode.SUCCESS, message, null);
     }
 
     public static <T> Result<T> success(T data) {

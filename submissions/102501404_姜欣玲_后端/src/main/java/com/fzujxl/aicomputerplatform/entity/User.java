@@ -21,4 +21,6 @@ public class User {
     private LocalDateTime updateTime;
     private LocalDateTime lastSignDate;
     private Integer signDays;
+    private Integer deleted;
+    private Long tokenVersion;
 }

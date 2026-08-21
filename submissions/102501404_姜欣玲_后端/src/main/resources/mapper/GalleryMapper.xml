@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fzujxl.aicomputerplatform.mapper.gallery.GalleryMapper">
+    <select id="selectByCondition" resultType="com.fzujxl.aicomputerplatform.entity.ArtWork">
+        SELECT category,task_type,hot_score FROM artwork
+            <if test="request.category !=null">
+                AND category = #{request.category}
+            </if>
+            <if test="request.taskType !=null">
+                AND task_type = #{request.taskType}
+            </if>
+            <if test="request.hotScore !=null">
+                AND hot_score = #{request.hotScore}
+            </if>
+        WHERE is_public = 1 and status = "approved" and deleted = 0
+        GROUP BY category,task_type
+        <if test="request.sort == 'hotScore'">
+            ORDER BY hot_score DESC
+        </if>
+    </select>
+</mapper>

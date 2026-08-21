@@ -1,8 +1,12 @@
 package com.fzujxl.aicomputerplatform.common;
 
+import lombok.Getter;
+
+@Getter
 public class ResultCode {
 
     public static final Integer SUCCESS = 200;
+
     public static final Integer BAD_REQUEST = 400;
     // 未认证
     public static  final Integer UNAUTHORIZED = 401;
@@ -13,7 +17,11 @@ public class ResultCode {
 
     public static final Integer INTERNAL_ERROR = 500;
 
-    private ResultCode() {
+    private final Integer code;
+    private final String message;
 
+    private ResultCode(Integer code, String message) {
+        this.code = code;
+        this.message = message;
     }
 }

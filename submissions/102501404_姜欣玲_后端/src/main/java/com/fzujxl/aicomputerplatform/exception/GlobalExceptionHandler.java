@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+//全局异常处理类
 @Slf4j
 @RestControllerAdvice
 
@@ -40,7 +41,7 @@ public class GlobalExceptionHandler {
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-        log.error("参数校验失败: {}", errors);
+        log.warn("参数校验失败: {}", errors);
         return Result.error(ResultCode.BAD_REQUEST, "参数校验失败",errors);
     }
 
