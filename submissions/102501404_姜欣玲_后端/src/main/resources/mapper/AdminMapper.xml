@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fzujxl.aicomputerplatform.mapper.admin.AdminMapper">
+    <update id="updateUser">
+        UPDATE user
+        <set>
+            <if test='userName !=null'>
+                userName = #{userName}
+            </if>
+            <if test="email !=null">
+                email = #{email}
+            </if> update_time = now()
+        </set>
+        WHERE id = #{id} and deleted = 0 LIMIT 1
+    </update>
+    <update id="statusOperate">
+        UPDATE user
+            <set>
+                <if test="id !=null or userName !=null or email !=null">
+                        status = #{status}
+                </if>
+            </set>
+        WHERE id = #{id} or userName = #{userName} or email = #{email} and deleted = 0 LIMIT 1
+    </update>
+    <update id="pointOperate">
+        UPDATE user
+        <set>
+            <if test="id !=null or userName !=null or email !=null">
+                point = #{point}
+            </if>
+        </set>
+        WHERE (id = #{id} or userName = #{userName} or email = #{email}) and deleted = 0 LIMIT 1
+    </update>
+    <select id="selectByStatusUniqueKey"
+            resultType="com.fzujxl.aicomputerplatform.entity.User">
+            (select id from 'user' where deleted = 0 and user_name = #{uniqueKey} )
+            UNION ALL
+            (select id from 'user' where deleted = 0 and email = #{uniqueKey} )
+            UNION ALL
+            (select id from 'user' where deleted = 0 and id = #{uniqueKey})
+            Limit 1
+    </select>
+    <select id="selectByUniqueKey"
+            resultType="com.fzujxl.aicomputerplatform.entity.User">
+            (select id from 'user' where deleted = 0 and user_name = #{uniqueKey} )
+            UNION ALL
+            (select id from 'user' where deleted = 0 and email = #{uniqueKey} )
+            UNION ALL
+            (select id from 'user' where deleted = 0 and id = #{uniqueKey})
+            Limit 1
+    </select>
+    <select id="selectByPointUniqueKey"
+            resultType="com.fzujxl.aicomputerplatform.entity.User">
+            (select id from 'user' where deleted = 0 and user_name = #{uniqueKey} )
+            UNION ALL
+            (select id from 'user' where deleted = 0 and email = #{uniqueKey} )
+            UNION ALL
+            (select id from 'user' where deleted = 0 and id = #{uniqueKey})
+            Limit 1
+    </select>
+</mapper>
