@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.computingpowerrental.mapper.ComputePackageMapper">
+
+    <resultMap id="ComputePackageResultMap"
+               type="com.example.computingpowerrental.entity.ComputePackage">
+
+        <id property="id"
+            column="id"/>
+
+        <result property="packageName"
+                column="package_name"/>
+
+        <result property="points"
+                column="compute_points"/>
+
+        <result property="price"
+                column="price"/>
+
+        <result property="status"
+                column="status"/>
+
+        <result property="createdAt"
+                column="created_at"/>
+
+        <result property="updatedAt"
+                column="updated_at"/>
+
+    </resultMap>
+
+
+    <!-- 根据ID查询套餐 -->
+    <select id="findById"
+            resultMap="ComputePackageResultMap">
+
+        SELECT *
+        FROM compute_package
+        WHERE id = #{id}
+
+    </select>
+
+
+    <!-- 查询全部套餐 -->
+    <select id="findAll"
+            resultMap="ComputePackageResultMap">
+
+        SELECT *
+        FROM compute_package
+        ORDER BY id DESC
+
+    </select>
+
+
+    <!-- 根据状态查询套餐 -->
+    <select id="findByStatus"
+            resultMap="ComputePackageResultMap">
+
+        SELECT *
+        FROM compute_package
+        WHERE status = #{status}
+        ORDER BY id DESC
+
+    </select>
+
+
+    <!-- 新增套餐 -->
+    <insert id="insert"
+            parameterType="com.example.computingpowerrental.entity.ComputePackage"
+            useGeneratedKeys="true"
+            keyProperty="id">
+
+        INSERT INTO compute_package (
+        package_name,
+        compute_points,
+        price,
+        status,
+        created_at,
+        updated_at
+        )
+        VALUES (
+        #{packageName},
+        #{points},
+        #{price},
+        #{status},
+        NOW(),
+        NOW()
+        )
+
+    </insert>
+
+
+    <!-- 修改套餐 -->
+    <update id="update"
+            parameterType="com.example.computingpowerrental.entity.ComputePackage">
+
+        UPDATE compute_package
+        SET
+        package_name = #{packageName},
+        compute_points = #{points},
+        price = #{price},
+        status = #{status},
+        updated_at = NOW()
+        WHERE id = #{id}
+
+    </update>
+
+
+    <!-- 修改套餐上下架状态 -->
+    <update id="updateStatus">
+
+        UPDATE compute_package
+        SET
+        status = #{status},
+        updated_at = NOW()
+        WHERE id = #{id}
+
+    </update>
+
+</mapper>

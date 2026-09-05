@@ -32,7 +32,7 @@ public class JwtProperties {
     public boolean isValid() {
         return secretKey != null
                 && !secretKey.trim().isEmpty()
-                && secretKey.length() >= 32;
+                && secretKey.length() >= 64;
     }
 
     //获取安全警告信息（如果配置不安全）
@@ -45,8 +45,8 @@ public class JwtProperties {
                 || secretKey.contains("must-be-32-chars-long")) {
             return "警告：正在使用默认 JWT 密钥，生产环境不安全";
         }
-        if (secretKey.length() < 32) {
-            return "警告：密钥长度不足32位，建议使用更长的密钥！";
+        if (secretKey.length() < 64) {
+            return "警告：密钥长度不足64位，建议使用更长的密钥！";
         }
         return null;
     }

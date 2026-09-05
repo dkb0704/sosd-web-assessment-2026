@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.computingpowerrental.mapper.AiModelMapper">
+
+
+    <!--
+        AiModel实体映射
+    -->
+    <resultMap id="AiModelResultMap"
+               type="com.example.computingpowerrental.entity.AiModel">
+
+        <id property="id" column="id"/>
+
+        <result property="modelCode"
+                column="model_code"/>
+
+        <result property="modelName"
+                column="model_name"/>
+
+        <result property="provider"
+                column="provider"/>
+
+        <result property="category"
+                column="category"/>
+
+        <result property="costPoints"
+                column="cost_points"/>
+
+        <result property="status"
+                column="status"/>
+
+        <result property="description"
+                column="description"/>
+
+        <result property="createdAt"
+                column="created_at"/>
+
+        <result property="updatedAt"
+                column="updated_at"/>
+
+    </resultMap>
+
+
+    <!--
+        公共字段
+    -->
+    <sql id="AiModelColumns">
+
+        id,
+        model_code,
+        model_name,
+        provider,
+        category,
+        cost_points,
+        status,
+        description,
+        created_at,
+        updated_at
+
+    </sql>
+
+
+    <!--
+        根据ID查询模型
+    -->
+    <select id="findById"
+            resultMap="AiModelResultMap">
+
+        SELECT
+        <include refid="AiModelColumns"/>
+        FROM ai_model
+        WHERE id = #{id}
+
+    </select>
+
+
+    <!--
+        根据模型编码查询
+    -->
+    <select id="findByModelCode"
+            resultMap="AiModelResultMap">
+
+        SELECT
+        <include refid="AiModelColumns"/>
+        FROM ai_model
+        WHERE model_code = #{modelCode}
+
+    </select>
+
+
+    <!--
+        查询已上架模型
+
+        用户端选择模型使用
+    -->
+    <select id="findPublishedModels"
+            resultMap="AiModelResultMap">
+
+        SELECT
+        <include refid="AiModelColumns"/>
+        FROM ai_model
+        WHERE status = 1
+        ORDER BY id ASC
+
+    </select>
+
+
+    <!--
+        根据分类查询已上架模型
+    -->
+    <select id="findPublishedModelsByCategory"
+            resultMap="AiModelResultMap">
+
+        SELECT
+        <include refid="AiModelColumns"/>
+        FROM ai_model
+        WHERE status = 1
+        AND category = #{category}
+        ORDER BY id ASC
+
+    </select>
+
+
+    <!--
+        查询全部模型
+
+        管理端使用
+    -->
+    <select id="findAll"
+            resultMap="AiModelResultMap">
+
+        SELECT
+        <include refid="AiModelColumns"/>
+        FROM ai_model
+        ORDER BY id ASC
+
+    </select>
+
+
+    <!--
+        新增模型
+    -->
+    <insert id="insert"
+            parameterType="com.example.computingpowerrental.entity.AiModel"
+            useGeneratedKeys="true"
+            keyProperty="id">
+
+        INSERT INTO ai_model
+        (
+        model_code,
+        model_name,
+        provider,
+        category,
+        cost_points,
+        status,
+        description,
+        created_at,
+        updated_at
+        )
+        VALUES
+        (
+        #{modelCode},
+        #{modelName},
+        #{provider},
+        #{category},
+        #{costPoints},
+        #{status},
+        #{description},
+        NOW(),
+        NOW()
+        )
+
+    </insert>
+
+
+    <!--
+        修改模型基础信息
+    -->
+    <update id="update">
+
+        UPDATE ai_model
+        SET
+
+        model_name = #{modelName},
+        provider = #{provider},
+        category = #{category},
+        description = #{description},
+        updated_at = NOW()
+
+        WHERE id = #{id}
+
+    </update>
+
+
+    <!--
+        修改模型状态
+    -->
+    <update id="updateStatus">
+
+        UPDATE ai_model
+        SET
+
+        status = #{status},
+        updated_at = NOW()
+
+        WHERE id = #{id}
+
+    </update>
+
+
+    <!--
+        修改模型算力价格
+    -->
+    <update id="updateCostPoints">
+
+        UPDATE ai_model
+        SET
+
+        cost_points = #{costPoints},
+        updated_at = NOW()
+
+        WHERE id = #{id}
+
+    </update>
+
+
+</mapper>

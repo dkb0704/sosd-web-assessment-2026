@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.computingpowerrental.mapper.RechargeOrderMapper">
+
+    <resultMap id="RechargeOrderResultMap"
+               type="com.example.computingpowerrental.entity.RechargeOrder">
+
+        <id property="id"
+            column="id"/>
+
+        <result property="orderNo"
+                column="order_no"/>
+
+        <result property="userId"
+                column="user_id"/>
+
+        <result property="packageId"
+                column="package_id"/>
+
+        <result property="packageName"
+                column="package_name"/>
+
+        <result property="points"
+                column="compute_points"/>
+
+        <result property="amount"
+                column="amount"/>
+
+        <result property="status"
+                column="status"/>
+
+        <result property="payTradeNo"
+                column="trade_no"/>
+
+        <result property="paidAt"
+                column="paid_at"/>
+
+        <result property="expiredAt"
+                column="expired_at"/>
+
+        <result property="createdAt"
+                column="created_at"/>
+
+        <result property="updatedAt"
+                column="updated_at"/>
+
+    </resultMap>
+
+
+    <sql id="RechargeOrderColumns">
+        id,
+        order_no,
+        user_id,
+        package_id,
+        package_name,
+        compute_points,
+        amount,
+        status,
+        trade_no,
+        paid_at,
+        expired_at,
+        created_at,
+        updated_at
+    </sql>
+
+
+    <!-- 创建充值订单 -->
+    <insert id="insert"
+            parameterType="com.example.computingpowerrental.entity.RechargeOrder"
+            useGeneratedKeys="true"
+            keyProperty="id">
+
+        INSERT INTO recharge_order (
+        order_no,
+        user_id,
+        package_id,
+        package_name,
+        compute_points,
+        amount,
+        status,
+        trade_no,
+        paid_at,
+        expired_at,
+        created_at,
+        updated_at
+        )
+        VALUES (
+        #{orderNo},
+        #{userId},
+        #{packageId},
+        #{packageName},
+        #{points},
+        #{amount},
+        #{status},
+        #{payTradeNo},
+        #{paidAt},
+        #{expiredAt},
+        NOW(),
+        NOW()
+        )
+
+    </insert>
+
+
+    <!-- 根据ID查询订单 -->
+    <select id="findById"
+            resultMap="RechargeOrderResultMap">
+
+        SELECT
+        <include refid="RechargeOrderColumns"/>
+        FROM recharge_order
+        WHERE id = #{id}
+
+    </select>
+
+
+    <!-- 根据订单号查询订单 -->
+    <select id="findByOrderNo"
+            resultMap="RechargeOrderResultMap">
+
+        SELECT
+        <include refid="RechargeOrderColumns"/>
+        FROM recharge_order
+        WHERE order_no = #{orderNo}
+
+    </select>
+
+
+    <!-- 查询用户订单 -->
+    <select id="findByUserId"
+            resultMap="RechargeOrderResultMap">
+
+        SELECT
+        <include refid="RechargeOrderColumns"/>
+        FROM recharge_order
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+
+    </select>
+
+    <!-- 分页查询用户充值订单 -->
+    <select id="findPageByUserId"
+            resultMap="RechargeOrderResultMap">
+
+        SELECT
+        <include refid="RechargeOrderColumns"/>
+        FROM recharge_order
+        WHERE user_id = #{userId}
+
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+
+        ORDER BY created_at DESC
+        LIMIT #{offset}, #{size}
+
+    </select>
+
+
+    <!-- 查询用户充值订单总数 -->
+    <select id="countByUserId"
+            resultType="java.lang.Long">
+
+        SELECT COUNT(*)
+        FROM recharge_order
+        WHERE user_id = #{userId}
+
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+
+    </select>
+
+
+    <!-- 查询全部订单 -->
+    <select id="findAll"
+            resultMap="RechargeOrderResultMap">
+
+        SELECT
+        <include refid="RechargeOrderColumns"/>
+        FROM recharge_order
+        ORDER BY created_at DESC
+
+    </select>
+
+    <!-- 管理端分页查询全站充值订单 -->
+    <select id="findPage"
+            resultMap="RechargeOrderResultMap">
+
+        SELECT
+        <include refid="RechargeOrderColumns"/>
+        FROM recharge_order
+
+        <where>
+            <if test="status != null">
+                status = #{status}
+            </if>
+        </where>
+
+        ORDER BY created_at DESC
+        LIMIT #{offset}, #{size}
+
+    </select>
+
+
+    <!-- 管理端查询全站充值订单总数 -->
+    <select id="countAll"
+            resultType="java.lang.Long">
+
+        SELECT COUNT(*)
+        FROM recharge_order
+
+        <where>
+            <if test="status != null">
+                status = #{status}
+            </if>
+        </where>
+
+    </select>
+
+    <!-- 管理员异常订单手动补单 -->
+    <update id="adminUpdatePaid">
+
+        UPDATE recharge_order
+        SET status = #{paidStatus},
+        paid_at = #{paidAt},
+        updated_at = NOW()
+        WHERE id = #{id}
+        AND status IN (
+        #{pendingStatus},
+        #{closedStatus}
+        )
+
+    </update>
+
+
+    <!-- 支付成功 -->
+    <update id="updatePaid">
+
+        UPDATE recharge_order
+        SET
+        status = #{paidStatus},
+        trade_no = #{payTradeNo},
+        paid_at = #{paidAt},
+        updated_at = NOW()
+        WHERE order_no = #{orderNo}
+        AND status IN (#{pendingStatus}, #{closedStatus})
+
+    </update>
+
+
+    <!-- 按原状态修改订单状态 -->
+    <update id="updateStatus">
+
+        UPDATE recharge_order
+        SET
+        status = #{newStatus},
+        updated_at = NOW()
+        WHERE id = #{id}
+        AND status = #{oldStatus}
+
+    </update>
+
+
+    <!-- 查询超时未支付订单 -->
+    <select id="findTimeoutOrders"
+            resultMap="RechargeOrderResultMap">
+
+        SELECT
+        <include refid="RechargeOrderColumns"/>
+        FROM recharge_order
+        WHERE status = #{status}
+        AND expired_at &lt;= #{expireTime}
+        ORDER BY expired_at ASC
+
+    </select>
+
+</mapper>

@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import com.example.computingpowerrental.dto.SignInResponse;
 import com.example.computingpowerrental.util.RedisUtil;
 
@@ -19,6 +21,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.concurrent.TimeUnit;
+import com.example.computingpowerrental.dto.AdminUpdateUserRequest;
+import com.example.computingpowerrental.vo.AdminUserPageVO;
+import com.example.computingpowerrental.service.ComputePointService;
+
+import java.util.List;
 
 /**
  * @author Lark
@@ -31,6 +38,8 @@ public class UserServiceImpl implements UserService{
     private UserMapper userMapper;
     @Autowired
     private RedisUtil redisUtil;
+    @Autowired
+    private ComputePointService computePointService;
 
     //BCrypt密码加密器（用于校验旧密码、加密新密码）
     private final BCryptPasswordEncoder passwordEncoder =
@@ -198,16 +207,21 @@ public class UserServiceImpl implements UserService{
             throw new RuntimeException("今日已签到，请勿重复领取");
         }
 
-        //数据库原子增加算力点
-        int affectedRows = userMapper.increaseComputePoints(
-                userId,
-                DAILY_SIGN_IN_REWARD
-        );
+        //复用统一算力入账逻辑，事务提交后同时失效 Redis 算力缓存。
+        computePointService.addPoints(userId, DAILY_SIGN_IN_REWARD);
 
-        if (affectedRows == 0) {
-            //数据库更新失败时，删除 Redis 签到记录。
-            redisUtil.delete(signInKey);
-            throw new RuntimeException("签到奖励发放失败");
+        //外层数据库事务回滚时，恢复当天的签到资格。
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCompletion(int status) {
+                            if (status == TransactionSynchronization.STATUS_ROLLED_BACK) {
+                                redisUtil.delete(signInKey);
+                            }
+                        }
+                    }
+            );
         }
 
         //重新查询用户，获取最新算力余额
@@ -221,6 +235,155 @@ public class UserServiceImpl implements UserService{
                 DAILY_SIGN_IN_REWARD,
                 updatedUser.getComputePoints()
         );
+    }
+
+    //管理端分页查询用户
+    @Override
+    public AdminUserPageVO adminPageUsers(Integer page, Integer size, Integer status) {
+
+        if (page == null || page < 1) {
+            page = 1;
+        }
+
+        if (size == null || size < 1) {
+            size = 10;
+        }
+
+        if (size > 100) {
+            size = 100;
+        }
+
+        if (status != null && status != 0 && status != 1) {
+            throw new RuntimeException("用户状态参数不正确");
+        }
+
+        int offset = (page - 1) * size;
+
+        List<User> users = userMapper.findPage(status, offset, size);
+
+        Long total = userMapper.countUsers(status);
+
+        List<UserInfoResponse> records = users.stream().map(UserInfoResponse::fromUser).toList();
+
+        AdminUserPageVO vo = new AdminUserPageVO();
+
+        vo.setRecords(records);
+        vo.setPage(page);
+        vo.setSize(size);
+        vo.setTotal(total);
+
+        return vo;
+    }
+
+
+    //管理端查询用户详情
+    @Override
+    public UserInfoResponse adminGetUser(Long userId) {
+
+        User user = userMapper.findById(userId);
+
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        return UserInfoResponse.fromUser(user);
+    }
+
+    //管理端修改用户资料
+    @Override
+    @Transactional
+    public UserInfoResponse adminUpdateUser(Long userId, AdminUpdateUserRequest request) {
+
+        User user = userMapper.findById(userId);
+
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        if (request.getNickname() != null) {
+            user.setNickname(request.getNickname());
+        }
+
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
+        }
+
+        if (request.getPhone() != null) {
+            user.setPhone(request.getPhone());
+        }
+
+        int rows = userMapper.update(user);
+
+        if (rows == 0) {
+            throw new RuntimeException("修改用户信息失败");
+        }
+
+        User updatedUser = userMapper.findById(userId);
+
+        return UserInfoResponse.fromUser(updatedUser);
+    }
+
+    //管理端启用/禁用用户
+    @Override
+    @Transactional
+    public void adminUpdateStatus(Long userId, Integer status) {
+
+        if (status == null || (status != 0 && status != 1)) {
+            throw new RuntimeException("用户状态参数不正确");
+        }
+
+        User user = userMapper.findById(userId);
+
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        int rows = userMapper.updateStatus(userId, status);
+
+        if (rows == 0) {
+            throw new RuntimeException("修改用户状态失败");
+        }
+    }
+
+    //管理端补偿用户算力
+    @Override
+    @Transactional
+    public void adminAddPoints(Long userId, Integer points) {
+
+        if (points == null || points <= 0) {
+            throw new RuntimeException("算力点数必须大于0");
+        }
+
+        User user = userMapper.findById(userId);
+
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        computePointService.addPoints(userId, points);
+    }
+
+    //管理端扣除用户算力
+    @Override
+    @Transactional
+    public void adminDeductPoints(Long userId, Integer points) {
+
+        if (points == null || points <= 0) {
+            throw new RuntimeException("算力点数必须大于0");
+        }
+
+        User user = userMapper.findById(userId);
+
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        boolean success = computePointService.consumePoints(userId, points
+        );
+
+        if (!success) {
+            throw new RuntimeException("用户算力不足，无法扣除");
+        }
     }
 
     //计算从当前时间到第二天零点的秒数，用于设置签到key的过期时间

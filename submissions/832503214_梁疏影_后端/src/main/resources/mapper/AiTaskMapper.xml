@@ -15,6 +15,7 @@
 
         <result property="userId" column="user_id"/>
         <result property="prompt" column="prompt"/>
+        <result property="modelId" column="model_id"/>
         <result property="modelName" column="model_name"/>
         <result property="category" column="category"/>
         <result property="costPoints" column="cost_points"/>
@@ -38,6 +39,7 @@
         id,
         user_id,
         prompt,
+        model_id,
         model_name,
         category,
         cost_points,
@@ -65,6 +67,7 @@
         INSERT INTO ai_task (
         user_id,
         prompt,
+        model_id,
         model_name,
         category,
         cost_points,
@@ -79,6 +82,7 @@
         VALUES (
         #{userId},
         #{prompt},
+        #{modelId},
         #{modelName},
         #{category},
         #{costPoints},
@@ -143,9 +147,10 @@
     -->
     <update id="updateStatus">
         UPDATE ai_task
-        SET status = #{status},
+        SET status = #{newStatus},
         updated_at = NOW()
         WHERE id = #{id}
+        AND status = #{oldStatus}
     </update>
 
     <!--
@@ -161,12 +166,13 @@
     -->
     <update id="updateSuccess">
         UPDATE ai_task
-        SET status = #{status},
+        SET status = #{newStatus},
         result = #{result},
         error_message = NULL,
         finished_at = NOW(),
         updated_at = NOW()
         WHERE id = #{id}
+        AND status = #{oldStatus}
     </update>
 
     <!--
@@ -180,11 +186,12 @@
     -->
     <update id="updateFailed">
         UPDATE ai_task
-        SET status = #{status},
+        SET status = #{newStatus},
         error_message = #{errorMessage},
         finished_at = NOW(),
         updated_at = NOW()
         WHERE id = #{id}
+        AND status = #{oldStatus}
     </update>
 
     <!--
@@ -199,6 +206,143 @@
         updated_at = NOW()
         WHERE id = #{id}
         AND user_id = #{userId}
+    </update>
+
+    <select id="findPageByUserId"
+            resultMap="AiTaskResultMap">
+
+        SELECT
+        <include refid="AiTaskColumns"/>
+
+        FROM ai_task
+
+        WHERE user_id = #{userId}
+
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+
+        ORDER BY created_at DESC
+
+        LIMIT #{offset}, #{size}
+
+    </select>
+
+    <select id="countByUserId"
+            resultType="java.lang.Long">
+
+        SELECT COUNT(*)
+
+        FROM ai_task
+
+        WHERE user_id = #{userId}
+
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+
+    </select>
+
+    <!-- 管理端分页查询全站AI任务 -->
+    <select id="findPage"
+            resultMap="AiTaskResultMap">
+
+        SELECT
+        <include refid="AiTaskColumns"/>
+        FROM ai_task
+
+        <where>
+            <if test="status != null">
+                status = #{status}
+            </if>
+        </where>
+
+        ORDER BY created_at DESC
+
+        LIMIT #{offset}, #{size}
+
+    </select>
+
+
+    <!-- 管理端查询全站AI任务总数 -->
+    <select id="countAll"
+            resultType="java.lang.Long">
+
+        SELECT COUNT(*)
+        FROM ai_task
+
+        <where>
+            <if test="status != null">
+                status = #{status}
+            </if>
+        </where>
+
+    </select>
+
+    <select id="findPublicTasks"
+            resultMap="AiTaskResultMap">
+
+        SELECT
+        <include refid="AiTaskColumns"/>
+
+        FROM ai_task
+
+        WHERE is_public = 1
+        AND status = 2
+
+        <if test="category != null">
+            AND category = #{category}
+        </if>
+
+        <choose>
+
+            <when test="sort == 'hot'">
+
+                ORDER BY like_count DESC
+
+            </when>
+
+            <otherwise>
+
+                ORDER BY created_at DESC
+
+            </otherwise>
+
+        </choose>
+
+        LIMIT #{offset}, #{size}
+
+    </select>
+
+    <select id="countPublicTasks"
+            resultType="java.lang.Long">
+
+        SELECT COUNT(*)
+
+        FROM ai_task
+
+        WHERE is_public = 1
+        AND status = 2
+
+        <if test="category != null">
+
+            AND category=#{category}
+
+        </if>
+
+    </select>
+
+    <update id="increaseLikeCount">
+
+        UPDATE ai_task
+
+        SET like_count = COALESCE(like_count, 0) + 1,
+        updated_at = NOW()
+
+        WHERE id = #{id}
+        AND is_public = 1
+        AND status = 2
+
     </update>
 
 </mapper>

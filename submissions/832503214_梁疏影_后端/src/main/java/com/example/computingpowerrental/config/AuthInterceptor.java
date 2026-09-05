@@ -37,6 +37,9 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         String token = extractToken(request);
 
+        System.out.println("收到Token:");
+        System.out.println(token);
+
         if (token == null || token.trim().isEmpty()) {
             sendErrorResponse(response, 401, "未提供 Token 或 Token 格式错误");
             return false;
@@ -45,7 +48,13 @@ public class AuthInterceptor implements HandlerInterceptor {
         //验证Token并提取UserID
         try {
             //先简单校验有效性
-            if (!jwtUtil.validateToken(token)) {
+            boolean valid = jwtUtil.validateToken(token);
+
+            System.out.println(
+                    "validateToken结果=" + valid
+            );
+
+            if (!valid) {
                 sendErrorResponse(response, 401, "Token 无效或已过期");
                 return false;
             }
@@ -63,6 +72,14 @@ public class AuthInterceptor implements HandlerInterceptor {
             Long userId = jwtUtil.getUserIdFromToken(token);
             Integer role = jwtUtil.getRoleFromToken(token);
 
+            System.out.println("Interceptor userId=" + userId);
+            System.out.println("Interceptor role=" + role);
+
+            System.out.println(
+                    "isAccessToken="
+                            + jwtUtil.isAccessToken(token)
+            );
+
             if (userId == null) {
                 sendErrorResponse(response, 401, "Token 中不包含用户 ID");
                 return false;
@@ -78,6 +95,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
 
         } catch (Exception e) {
+            e.printStackTrace();
             sendErrorResponse(response, 401, "Token 解析失败");
             return false;
         }
