@@ -3,6 +3,7 @@ package com.example.computingpowerrental.mapper;
 import com.example.computingpowerrental.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import java.util.List;
 
 /**
  * @author Lark
@@ -18,9 +19,18 @@ public interface UserMapper {
     int insert(User user);
     int update(User user);
     int updateStatus(@Param("id") Long id, @Param("status") Integer status);
-    int updateComputePoints(@Param("id") Long id,
-                            @Param("computePoints") Integer computePoints);
+    int updateComputePoints(@Param("id") Long id, @Param("computePoints") Integer computePoints);
     //原子增加用户算力点数
-    int increaseComputePoints(@Param("id") Long id,
-                              @Param("points") Integer points);
+    int increaseComputePoints(@Param("id") Long id, @Param("points") Integer points);
+
+    //原子扣减用户算力
+    int decreaseComputePoints(@Param("id") Long id, @Param("points") Integer points);
+
+    int reducePoints(@Param("userId") Long userId, @Param("points") Integer points);
+
+    //管理端分页查询用户
+    List<User> findPage(@Param("status") Integer status, @Param("offset") Integer offset, @Param("size") Integer size);
+
+    //管理端查询用户总数
+    Long countUsers(@Param("status") Integer status);
 }

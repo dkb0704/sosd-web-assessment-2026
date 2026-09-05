@@ -68,11 +68,22 @@ public class JwtUtil {
     public Claims parseToken(String token) {
         try {
             return Jwts.parser()
-                    .setSigningKey(jwtProperties.getSecretKey())
+                    .setSigningKey(
+                            Keys.hmacShaKeyFor(
+                                    getSecretKeyString().getBytes()
+                            )
+                    )
                     .parseClaimsJws(token)
                     .getBody();
+
         } catch (JwtException e) {
-            throw new RuntimeException("JWT解析失败: " + e.getMessage(), e);
+
+            e.printStackTrace();
+
+            throw new RuntimeException(
+                    "JWT解析失败: " + e.getMessage(),
+                    e
+            );
         }
     }
 
@@ -134,9 +145,38 @@ public class JwtUtil {
     //验证Token是否有效
     public boolean validateToken(String token) {
         try {
-            parseToken(token);
+
+            Claims claims = parseToken(token);
+
+            System.out.println(
+                    "JWT解析成功:"
+            );
+
+            System.out.println(
+                    "userId="
+                            + claims.get("userId")
+            );
+
+            System.out.println(
+                    "username="
+                            + claims.get("username")
+            );
+
+            System.out.println(
+                    "type="
+                            + claims.get("type")
+            );
+
             return true;
+
         } catch (Exception e) {
+
+            System.out.println(
+                    "JWT验证失败:"
+            );
+
+            e.printStackTrace();
+
             return false;
         }
     }
@@ -170,11 +210,11 @@ public class JwtUtil {
             throw new RuntimeException("JWT密钥未配置");
         }
 
-        if (secret.length() < 32) {
+        if (secret.length() < 64) {
             if (envUtil.isDevelopment()) {
-                secret = String.format("%-32s", secret).replace(' ', 'X');
+                secret = String.format("%-64s", secret).replace(' ', 'X');
             } else {
-                throw new RuntimeException("生产环境 JWT 密钥长度不能小于32位");
+                throw new RuntimeException("生产环境 JWT 密钥长度不能小于64位");
             }
         }
 

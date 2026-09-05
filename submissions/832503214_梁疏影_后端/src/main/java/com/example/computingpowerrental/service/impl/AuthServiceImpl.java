@@ -118,15 +118,6 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * 用户退出登录
-     *
-     * 实现思路：
-     * JWT 本身是无状态的，后端无法直接“删除”已经签发的 Token。
-     * 因此退出登录时，将当前 Access Token 写入 Redis 黑名单。
-     *
-     * 后续每次请求经过 AuthInterceptor 时，
-     * 都会先检查该 Token 是否存在于 Redis 黑名单中。
-     *
-     * @param accessToken 当前请求携带的 Access Token
      */
     @Override
     public void logout(String accessToken) {
@@ -157,12 +148,7 @@ public class AuthServiceImpl implements AuthService {
         String blacklistKey = TOKEN_BLACKLIST_PREFIX + accessToken;
 
         //将 Token 加入 Redis 黑名单
-        redisUtil.set(
-                blacklistKey,
-                "1",
-                remainingTime,
-                TimeUnit.SECONDS
-        );
+        redisUtil.set(blacklistKey, "1", remainingTime, TimeUnit.SECONDS);
     }
 
     private LoginResponse buildLoginResponse(User user) {

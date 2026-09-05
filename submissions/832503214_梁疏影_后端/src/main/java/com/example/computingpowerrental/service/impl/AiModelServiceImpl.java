@@ -132,9 +132,10 @@ public class AiModelServiceImpl implements AiModelService {
                 getById(aiModel.getId());
 
 
-        //不允许修改模型编码
-        if (!exist.getModelCode()
-                .equals(aiModel.getModelCode())) {
+        //基础信息更新不传 modelCode，回填原编码以保持不变。
+        if (aiModel.getModelCode() == null) {
+            aiModel.setModelCode(exist.getModelCode());
+        } else if (!exist.getModelCode().equals(aiModel.getModelCode())) {
 
             throw new RuntimeException(
                     "不允许修改模型编码"

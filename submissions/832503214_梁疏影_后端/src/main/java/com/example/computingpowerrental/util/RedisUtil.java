@@ -3,7 +3,9 @@ package com.example.computingpowerrental.util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -117,5 +119,55 @@ public class RedisUtil {
                 );
 
         return Boolean.TRUE.equals(result);
+    }
+
+    /**
+     * 原子扣减数值。
+     *
+     * 返回值：
+     *  1  扣减成功
+     * -1  余额不足
+     * -2  Key不存在
+     */
+    public Long atomicDecrease(String key, Integer points) {
+
+        if (key == null || points == null || points <= 0) {
+            throw new IllegalArgumentException("Redis Key不能为空，扣减值必须大于0");
+        }
+
+        String script =
+                "local current = redis.call('GET', KEYS[1]); " +
+                        "if not current then " +
+                        "    return -2; " +
+                        "end; " +
+                        "current = tonumber(current); " +
+                        "local cost = tonumber(ARGV[1]); " +
+                        "if current < cost then " +
+                        "    return -1; " +
+                        "end; " +
+                        "redis.call('DECRBY', KEYS[1], cost); " +
+                        "return 1;";
+
+        DefaultRedisScript<Long> redisScript =
+                new DefaultRedisScript<>(script, Long.class);
+
+        return redisTemplate.execute(
+                redisScript,
+                Collections.singletonList(key),
+                points.toString()
+        );
+    }
+
+    /**
+     * 原子增加数值。
+     * 主要用于Redis算力扣减后的异常补偿。
+     */
+    public Long atomicIncrease(String key, Integer points) {
+
+        if (key == null || points == null || points <= 0) {
+            throw new IllegalArgumentException("Redis Key不能为空，增加值必须大于0");
+        }
+
+        return redisTemplate.opsForValue().increment(key, points);
     }
 }

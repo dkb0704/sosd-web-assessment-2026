@@ -23,25 +23,69 @@ public interface AiTaskMapper {
     AiTask findByIdAndUserId(@Param("id") Long id,
                              @Param("userId") Long userId);
 
-    //查询指定用户的 AI 任务列表
     List<AiTask> findByUserId(@Param("userId") Long userId);
+
+    //分页查询用户任务
+    List<AiTask> findPageByUserId(
+            @Param("userId") Long userId,
+            @Param("status") Integer status,
+            @Param("offset") Integer offset,
+            @Param("size") Integer size
+    );
+
+    //查询任务总数
+    Long countByUserId(
+            @Param("userId") Long userId,
+            @Param("status") Integer status
+    );
+
+    //查询公开作品列表
+    List<AiTask> findPublicTasks(
+            @Param("category") String category,
+            @Param("sort") String sort,
+            @Param("offset") Integer offset,
+            @Param("size") Integer size
+    );
+
+    //查询公开作品数量
+    Long countPublicTasks(
+            @Param("category") String category
+    );
 
     //更新任务状态
     int updateStatus(@Param("id") Long id,
-                     @Param("status") Integer status);
+                     @Param("oldStatus") Integer oldStatus,
+                     @Param("newStatus") Integer newStatus);
 
     //将任务更新为生成成功
     int updateSuccess(@Param("id") Long id,
-                      @Param("status") Integer status,
+                      @Param("oldStatus") Integer oldStatus,
+                      @Param("newStatus") Integer newStatus,
                       @Param("result") String result);
 
     //将任务更新为生成失败
     int updateFailed(@Param("id") Long id,
-                     @Param("status") Integer status,
+                     @Param("oldStatus") Integer oldStatus,
+                     @Param("newStatus") Integer newStatus,
                      @Param("errorMessage") String errorMessage);
 
     //更新任务公开状态
     int updatePublicStatus(@Param("id") Long id,
                            @Param("userId") Long userId,
                            @Param("isPublic") Boolean isPublic);
+
+    //公开作品点赞
+    int increaseLikeCount(@Param("id") Long id);
+
+    //管理端分页查询全站AI任务
+    List<AiTask> findPage(
+            @Param("status") Integer status,
+            @Param("offset") Integer offset,
+            @Param("size") Integer size
+    );
+
+    //管理端查询全站AI任务总数
+    Long countAll(
+            @Param("status") Integer status
+    );
 }

@@ -78,6 +78,9 @@
             <if test="phone != null">
                 phone = #{phone},
             </if>
+            <if test="email != null">
+                email = #{email},
+            </if>
             <if test="password != null">
                 password = #{password},
             </if>
@@ -106,5 +109,56 @@
         updated_at = NOW()
         WHERE id = #{id}
     </update>
+
+    <update id="decreaseComputePoints">
+        UPDATE user
+        SET compute_points = compute_points - #{points},
+        updated_at = NOW()
+        WHERE id = #{id}
+        AND compute_points >= #{points}
+    </update>
+
+    <update id="reducePoints">
+        UPDATE user
+        SET compute_points = compute_points - #{points}
+        WHERE id = #{userId}
+        AND compute_points >= #{points}
+    </update>
+
+    <!-- 管理端分页查询用户 -->
+    <select id="findPage"
+            resultMap="UserResultMap">
+
+        SELECT
+        id, username, password, email, nickname, avatar, phone,
+        role, status, compute_points, created_at, updated_at
+        FROM user
+
+        <where>
+            <if test="status != null">
+                status = #{status}
+            </if>
+        </where>
+
+        ORDER BY created_at DESC
+        LIMIT #{offset}, #{size}
+
+    </select>
+
+
+    <!-- 管理端查询用户总数 -->
+    <select id="countUsers"
+            resultType="java.lang.Long">
+
+        SELECT COUNT(*)
+        FROM user
+
+        <where>
+            <if test="status != null">
+                status = #{status}
+            </if>
+        </where>
+
+    </select>
 
 </mapper>
